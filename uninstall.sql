@@ -33,3 +33,23 @@ begin
 exception when others then null;
 end;
 /
+begin
+  execute immediate 'drop type auditor_columns';
+exception when others then null;
+end;
+/
+begin
+  execute immediate 'drop type auditor_column';
+exception when others then null;
+end;
+/
+begin
+  execute immediate 'drop type auditor_column_changes';
+exception when others then null;
+end;
+/
+begin
+  execute immediate 'drop type auditor_column_change';
+exception when others then null;
+end;
+/

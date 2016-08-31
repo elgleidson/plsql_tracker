@@ -1,5 +1,6 @@
 @uninstall
 
+@auditor_types.sql
 @auditor_tables.sql
 @auditor_pkg.sql
 @auditor_views.sql

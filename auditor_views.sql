@@ -1,14 +1,19 @@
-create or replace view v_auditor_logs as
+create or replace view auditor_log_changes as
 select 
-  al.audit_date, 
-  al.table_owner, 
-  al.table_name,
-  auditor.get_data(al.row_key) as row_key,
   al.audit_id, 
-  al.column_name, 
-  auditor.get_data(al.old_value) as old_value,
-  auditor.get_data(al.new_value) as new_value,
-  al.audit_info
-from auditor_logs al;
+  al.audit_date,
+  al.table_owner,
+  al.table_name,
+  al.row_simple_key,
+  al.row_keys,
+  rc.col_name,
+  rc.old_value,
+  rc.new_value,
+  al.os_user,
+  al.host,
+  al.module,
+  al.action,
+  al.audit_callstack
+from auditor_logs al, table(al.row_changes) rc;
 /
 

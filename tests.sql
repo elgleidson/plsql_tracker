@@ -15,9 +15,11 @@ alter table teste move;
 
 -- 30779
 
-alter table teste drop (blabla);
+alter table teste drop (valor_ds_interval);
 
 alter table teste add (valor_ds_interval interval day to second);
+
+alter table teste rename column valor_ds_interval to valor_dsi;
 
 
 select auditor.generate_audit_trigger('gleidson', 'teste', 'aud$teste') from dual;
