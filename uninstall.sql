@@ -1,55 +1,55 @@
 begin
-  execute immediate 'drop package auditor';
+  execute immediate 'drop package tracker';
 exception when others then null;
 end;
 /
 begin
-  execute immediate 'drop public synonym auditor';
+  execute immediate 'drop public synonym tracker';
 exception when others then null;
 end;
 /
 begin
-  execute immediate 'drop table auditor_logs';
+  execute immediate 'drop table tracker_logs';
 exception when others then null;
 end;
 /
 begin
-  execute immediate 'drop view v_auditor_logs';
+  execute immediate 'drop view v_tracker_logs';
 exception when others then null;
 end;
 /
 begin
-  execute immediate 'drop public synonym auditor_logs';
+  execute immediate 'drop public synonym tracker_logs';
 exception when others then null;
 end;
 /
 begin
-  execute immediate 'drop sequence seq_auditor_logs';
+  execute immediate 'drop sequence seq_tracker_logs';
 exception when others then null;
 end;
 /
 begin
-  execute immediate 'drop table auditor_configs';
+  execute immediate 'drop table tracker_configs';
 exception when others then null;
 end;
 /
 begin
-  execute immediate 'drop type auditor_columns';
+  execute immediate 'drop type tracking_columns';
 exception when others then null;
 end;
 /
 begin
-  execute immediate 'drop type auditor_column';
+  execute immediate 'drop type tracking_column';
 exception when others then null;
 end;
 /
 begin
-  execute immediate 'drop type auditor_column_changes';
+  execute immediate 'drop type tracking_column_changes';
 exception when others then null;
 end;
 /
 begin
-  execute immediate 'drop type auditor_column_change';
+  execute immediate 'drop type tracking_column_change';
 exception when others then null;
 end;
 /

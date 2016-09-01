@@ -1,8 +1,8 @@
 @uninstall
 
-@auditor_types.sql
-@auditor_tables.sql
-@auditor_pkg.sql
-@auditor_views.sql
-@auditor_grants.sql
-@auditor_synonyms.sql
+@tracker_types.sql
+@tracker_tables.sql
+@tracker_pkg.sql
+@tracker_views.sql
+@tracker_grants.sql
+@tracker_synonyms.sql

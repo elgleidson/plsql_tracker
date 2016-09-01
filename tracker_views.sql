@@ -1,7 +1,7 @@
-create or replace view auditor_log_changes as
+create or replace view tracker_log_changes as
 select 
-  al.audit_id, 
-  al.audit_date,
+  al.tracking_id, 
+  al.tracking_date,
   al.table_owner,
   al.table_name,
   al.row_simple_key,
@@ -13,7 +13,7 @@ select
   al.host,
   al.module,
   al.action,
-  al.audit_callstack
-from auditor_logs al, table(al.row_changes) rc;
+  al.tracking_callstack
+from tracker_logs al, table(al.row_changes) rc;
 /
 

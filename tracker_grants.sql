@@ -1,11 +1,11 @@
-grant select on auditor_logs to public;
+grant select on tracker_logs to public;
 /
 
-grant select on auditor_log_changes to public;
+grant select on tracker_log_changes to public;
 /
 
 /*
--- GRANT FOR THE USER WHERE THE AUDITOR PACKAGE WILL BE INSTALLED
+-- GRANT FOR THE USER WHERE THE tracker PACKAGE WILL BE INSTALLED
 grant create any trigger to &user;
 /
 grant drop any trigger to &user;
