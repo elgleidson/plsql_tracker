@@ -12,6 +12,7 @@ create or replace package auditor authid definer as
   procedure add_row_key(p_row_keys in out nocopy auditor_columns, p_column_name in varchar2, p_column_value in date);
   procedure add_row_key(p_row_keys in out nocopy auditor_columns, p_column_name in varchar2, p_column_value in timestamp);
   procedure add_row_key(p_row_keys in out nocopy auditor_columns, p_column_name in varchar2, p_column_value in timestamp with time zone);
+  procedure add_row_key(p_row_keys in out nocopy auditor_columns, p_column_name in varchar2, p_column_value in timestamp with local time zone);
   procedure add_row_key(p_row_keys in out nocopy auditor_columns, p_column_name in varchar2, p_column_value in interval day to second);
   procedure add_row_key(p_row_keys in out nocopy auditor_columns, p_column_name in varchar2, p_column_value in interval year to month);
   
@@ -20,6 +21,7 @@ create or replace package auditor authid definer as
   procedure add_row_change(p_row_changes in out nocopy auditor_column_changes, p_column_name in varchar2, p_old_value in date, p_new_value in date);
   procedure add_row_change(p_row_changes in out nocopy auditor_column_changes, p_column_name in varchar2, p_old_value in timestamp, p_new_value in timestamp);
   procedure add_row_change(p_row_changes in out nocopy auditor_column_changes, p_column_name in varchar2, p_old_value in timestamp with time zone, p_new_value in timestamp with time zone);
+  procedure add_row_change(p_row_changes in out nocopy auditor_column_changes, p_column_name in varchar2, p_old_value in timestamp with local time zone, p_new_value in timestamp with local time zone);
   procedure add_row_change(p_row_changes in out nocopy auditor_column_changes, p_column_name in varchar2, p_old_value in interval day to second, p_new_value in interval day to second);
   procedure add_row_change(p_row_changes in out nocopy auditor_column_changes, p_column_name in varchar2, p_old_value in interval year to month, p_new_value in interval year to month);
   
@@ -81,7 +83,13 @@ create or replace package body auditor as
   function to_string(p_value in timestamp with time zone) return varchar2
   is
   begin
-    return to_char(p_value, 'YYYY-MM-DD HH24:MI:SS.FF9 TRZ');
+    return to_char(p_value, 'YYYY-MM-DD HH24:MI:SS.FF9 TZH:TZM');
+  end;
+  
+  function to_string(p_value in timestamp with local time zone) return varchar2
+  is
+  begin
+    return to_char(p_value, 'YYYY-MM-DD HH24:MI:SS.FF9');
   end;
   
   function to_string(p_value in interval day to second) return varchar2
@@ -135,6 +143,12 @@ create or replace package body auditor as
     append_row_key(p_row_keys => p_row_keys, p_column_name => p_column_name, p_column_value => to_string(p_column_value));
   end;
   
+  procedure add_row_key(p_row_keys in out nocopy auditor_columns, p_column_name in varchar2, p_column_value in timestamp with local time zone)
+  is
+  begin
+    append_row_key(p_row_keys => p_row_keys, p_column_name => p_column_name, p_column_value => to_string(p_column_value));
+  end;
+  
   procedure add_row_key(p_row_keys in out nocopy auditor_columns, p_column_name in varchar2, p_column_value in interval day to second)
   is
   begin
@@ -181,6 +195,12 @@ create or replace package body auditor as
   end;
   
   procedure add_row_change(p_row_changes in out nocopy auditor_column_changes, p_column_name in varchar2, p_old_value in timestamp with time zone, p_new_value in timestamp with time zone)
+  is
+  begin
+    append_row_change(p_row_changes => p_row_changes, p_column_name => p_column_name, p_old_value => to_string(p_old_value), p_new_value => to_string(p_new_value));
+  end;
+  
+  procedure add_row_change(p_row_changes in out nocopy auditor_column_changes, p_column_name in varchar2, p_old_value in timestamp with local time zone, p_new_value in timestamp with local time zone)
   is
   begin
     append_row_change(p_row_changes => p_row_changes, p_column_name => p_column_name, p_old_value => to_string(p_old_value), p_new_value => to_string(p_new_value));

@@ -1,67 +1,229 @@
-drop table teste;
-create table teste (id number, valor_inteiro number, valor_float float, flag char(1), constraint teste_pk primary key (id));
+alter session set time_zone = '-12:0';
 
-insert into teste (id, valor_inteiro, valor_float, flag)
-select level as id, level * 10 as valor_inteiro, level * 10.5 as valor_float, decode(mod(level, 2), 0, 'S', 'N') as flag
-from dual
-connect by level <= 10;
+begin
+  execute immediate 'drop table gleidson.test';
+exception when others then null;
+end;
+/
+
+create table gleidson.test (
+  id number, 
+  number_value number, 
+  float_value float, 
+  char_value char(1),
+  varchar2_value varchar2(100),
+  date_value date,
+  timestamp_value timestamp,
+  timestamp_tz_value timestamp with time zone,
+  timestamp_ltz_value timestamp with local time zone,
+  interval_ds_value interval day to second,
+  interval_ym_value interval year to month,
+  constraint test_pk primary key (id)
+);
+/
+
+insert into gleidson.test (id) values (1);
+commit;
+/
+
+
+select * from gleidson.test;
+
+
+/***** START TRACKING CHANGES *****/
+truncate table auditor_logs;
+
+exec auditor.start_audit(p_table_owner => 'GLEIDSON', p_table_name => 'TEST');
+
+select * from auditor_configs;
+
+update gleidson.test set number_value = trunc(dbms_random.value() * 1000) where id = 1;
+update gleidson.test set number_value = null where id = 1;
+
 commit;
 
-select * from all_objects where object_name = 'TESTE';
-select * from user_objects where object_name = 'TESTE';
+select * from auditor_logs;
 
-alter table teste2 rename to teste;
-alter table teste move;
-
--- 30779
-
-alter table teste drop (valor_ds_interval);
-
-alter table teste add (valor_ds_interval interval day to second);
-
-alter table teste rename column valor_ds_interval to valor_dsi;
+select * from auditor_log_changes;
 
 
-select auditor.generate_audit_trigger('gleidson', 'teste', 'aud$teste') from dual;
 
-exec auditor.start_audit('GLEIDSON', 'TESTE');
+/***** UPDATE DOES NOT CHANGE VALUE *****/
+truncate table auditor_logs;
 
-exec auditor.stop_audit('GLEIDSON', 'TESTE');
+update gleidson.test set number_value = -10 where id = 1;
+update gleidson.test set number_value = -10 where id = 1;
 
-exec auditor.refresh_audit('GLEIDSON', 'TESTE');
+commit;
 
-select * from audit_config;
+select * from auditor_logs;
 
-select * from teste;
+select * from auditor_log_changes;
 
-alter table teste disable all triggers;
-alter trigger sys.aud$30841 disable;
 
-update teste set blabla = '1';
 
---truncate table audit_logs;
 
-update teste set valor_ds_interval = numtodsinterval(10, 'SECOND') where id = 1;
+/***** CHANGES IN DATA TYPES SUPPORTED *****/
+truncate table auditor_logs;
 
-update teste set flag = 'x' where id = 1;
-update teste set valor_inteiro = 1 where id = 1;
-update teste set valor_float = 1.1 where id = 1;
-update teste set valor_inteiro = 1, flag = 'X' where id = 1;
+update gleidson.test set number_value = trunc(dbms_random.value() * 1000) where id = 1;
+update gleidson.test set char_value = dbms_random.string('A', 1) where id = 1;
+update gleidson.test set varchar2_value = dbms_random.string('A', 10) where id = 1;
+update gleidson.test set date_value = sysdate where id = 1;
+update gleidson.test set timestamp_value = systimestamp where id = 1;
+update gleidson.test set timestamp_tz_value = current_timestamp where id = 1;
+update gleidson.test set timestamp_ltz_value = localtimestamp where id = 1;
+update gleidson.test set interval_ds_value = numtodsinterval(10, 'SECOND') where id = 1;
+update gleidson.test set interval_ym_value = numtoyminterval(1, 'MONTH') where id = 1;
 
-select *
-from teste t
-join audit_logs l on l.table_owner = 'GLEIDSON' and l.table_name = 'TESTE' and auditor.get_data(l.row_key) = auditor.get_data(auditor.to_anydata(t.id))
-;
+commit;
 
-select * from audit_logs;
 
-select al.audit_id, al.audit_date, 
-  al.table_owner, 
-  al.table_name,
-  auditor.get_data(al.row_key) as row_key,
-  al.column_name, 
-  auditor.get_data(al.old_value) as old_value,
-  auditor.get_data(al.new_value) as new_value
-from audit_logs al
---where auditor.get_data(al.row_key) = auditor.get_data(auditor.to_anydata(1))
-;
+select * from auditor_logs;
+
+select * from auditor_log_changes;
+
+
+/***** ROLLBACK TRANSACTION *****/
+truncate table auditor_logs;
+
+update gleidson.test set number_value = trunc(dbms_random.value() * 1000) where id = 1;
+update gleidson.test set number_value = trunc(dbms_random.value() * 1000) where id = 1;
+
+select * from auditor_logs;
+
+select * from auditor_log_changes;
+
+rollback;
+
+
+select * from auditor_logs;
+
+select * from auditor_log_changes;
+
+
+
+/***** UPDATE MORE COLUMNS AT SAME TIME *****/
+truncate table auditor_logs;
+
+
+update gleidson.test set 
+  number_value = trunc(dbms_random.value() * 1000), 
+  char_value = dbms_random.string('A', 1), 
+  varchar2_value = dbms_random.string('A', 10)
+where id = 1;
+
+commit;
+
+
+select * from auditor_logs;
+
+select * from auditor_log_changes;
+
+
+
+/***** ADD A COLUMN *****/
+-- must refresh audit otherwise changes will not tracked
+truncate table auditor_logs;
+
+alter table gleidson.test add another_value number;
+
+
+update gleidson.test set another_value = trunc(dbms_random.value() * 1000) where id = 1;
+
+commit;
+
+
+select * from auditor_logs;
+
+select * from auditor_log_changes;
+
+
+exec auditor.refresh_audit(p_table_owner => 'GLEIDSON', p_table_name => 'TEST');
+
+update gleidson.test set another_value = -500 where id = 1;
+
+commit;
+
+
+select * from auditor_logs;
+
+select * from auditor_log_changes;
+
+
+
+
+/***** RENAME A COLUMN *****/
+-- must refresh audit otherwise changes will raise exception when tracking
+-- because it invalidates the tracking trigger
+truncate table auditor_logs;
+
+alter table gleidson.test rename column another_value to other_value;
+
+
+update gleidson.test set other_value = trunc(dbms_random.value() * 1000) where id = 1;
+
+commit;
+
+
+exec auditor.refresh_audit(p_table_owner => 'GLEIDSON', p_table_name => 'TEST');
+
+
+update gleidson.test set other_value = trunc(dbms_random.value() * 1000) where id = 1;
+
+commit;
+
+
+select * from auditor_logs;
+
+select * from auditor_log_changes;
+
+
+
+
+/***** EXCLUDE SOME COLUMNS FROM TRACKING *****/
+truncate table auditor_logs;
+
+exec auditor.start_audit(p_table_owner => 'GLEIDSON', p_table_name => 'TEST', p_exclude_columns => 'char_value,varchar2_value');
+
+select * from auditor_configs;
+
+update gleidson.test set char_value = dbms_random.string('A', 1) where id = 1;
+update gleidson.test set char_value = dbms_random.string('A', 1) where id = 1;
+
+update gleidson.test set varchar2_value = dbms_random.string('A', 10) where id = 1;
+update gleidson.test set varchar2_value = dbms_random.string('A', 10) where id = 1;
+
+commit;
+
+select * from auditor_logs;
+
+select * from auditor_log_changes;
+
+
+
+/***** STOP TRACKING CHANGES *****/
+truncate table auditor_logs;
+
+exec auditor.stop_audit(p_table_owner => 'GLEIDSON', p_table_name => 'TEST');
+
+select * from auditor_configs;
+
+
+update gleidson.test set number_value = trunc(dbms_random.value() * 1000) where id = 1;
+update gleidson.test set char_value = dbms_random.string('A', 1) where id = 1;
+update gleidson.test set varchar2_value = dbms_random.string('A', 10) where id = 1;
+update gleidson.test set date_value = sysdate where id = 1;
+update gleidson.test set timestamp_value = systimestamp where id = 1;
+update gleidson.test set timestamp_tz_value = current_timestamp where id = 1;
+update gleidson.test set timestamp_ltz_value = localtimestamp where id = 1;
+update gleidson.test set interval_ds_value = numtodsinterval(10, 'SECOND') where id = 1;
+update gleidson.test set interval_ym_value = numtoyminterval(1, 'MONTH') where id = 1;
+
+commit;
+
+
+select * from auditor_logs;
+
+select * from auditor_log_changes;
+
