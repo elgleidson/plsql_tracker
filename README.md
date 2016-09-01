@@ -100,11 +100,11 @@ commit;
 select * from tracker_log_changes where table_owner = 'GLEIDSON' and TABLE_NAME = 'TEST';
 ```
 
-As we can see there are "2 new rows"*: 
+As we can see there are "2 new rows": 
 - One to number_value columns with old value is 2 and new value as 10
 - Another one to char_value column with old value as null and new value as S
 
-* In the underlying table there is just 1 row tracking the update above. As said before, `tracker_log_changes` is just a view that make easier see the changes. To see details, check *nested table*.
+There is not really 2 rows here. In the underlying table there is just 1 row tracking the whole update above. As said before, `tracker_log_changes` is just a view that make easier see the changes. To see details, check *nested table*.
 
 
 To stop tracking changes, just call the tracker procedure `stop_tracking`:
